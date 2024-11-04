@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import importlib
+import zipfile
+import os
 import io
 from typing import IO, Any, Callable, Literal, Optional
 
@@ -19,6 +21,20 @@ from unstructured.partition.utils.constants import PartitionStrategy
 from unstructured.utils import dependency_exists
 
 Partitioner: TypeAlias = Callable[..., list[Element]]
+
+
+def extract_zip(zip_name, extract_to):
+    print("[EXTRACTING ZIP IN FORKED UNSTRUCTURED]", zip_name, extract_to)
+    with zipfile.ZipFile(zip_name, 'r') as zipf:
+        zipf.extractall(extract_to)
+        namelist = zipf.namelist()
+        filepaths = []
+        for name in namelist:
+            detached_file_path = os.path.join(extract_to, name)
+            if(os.path.isfile(detached_file_path)):
+                filepaths.append(detached_file_path)
+            
+        return filepaths
 
 
 def partition(
@@ -50,6 +66,7 @@ def partition(
     hi_res_model_name: Optional[str] = None,
     model_name: Optional[str] = None,  # to be deprecated
     starting_page_number: int = 1,
+    tmp_dir_path: Optional[str] = None,
     **kwargs: Any,
 ):
     """Partitions a document into its constituent elements.
@@ -440,6 +457,16 @@ def partition(
         )
     elif file_type == FileType.EMPTY:
         elements = []
+    elif file_type == FileType.ZIP:
+        filespaths = extract_zip(filename, tmp_dir_path)
+        elements = []
+        for filepath in filespaths:
+            file_elements = partition(
+                filepath,
+                tmp_dir_path=tmp_dir_path,
+                **kwargs
+            )
+            elements.extend(file_elements)
     else:
         msg = "Invalid file" if not filename else f"Invalid file {filename}"
         raise ValueError(f"{msg}. The {file_type} file type is not supported in partition.")

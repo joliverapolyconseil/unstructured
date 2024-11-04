@@ -263,6 +263,7 @@ class _AttachmentPartitioner:
                 detached_file_path,
                 metadata_filename=self._attachment_file_name,
                 metadata_last_modified=self._attachment_last_modified,
+                tmp_dir_path=tmp_dir_path,
                 **self._opts.partitioning_kwargs,
             ):
                 element.metadata.attached_to_filename = self._opts.metadata_file_path
