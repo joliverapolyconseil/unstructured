@@ -457,6 +457,8 @@ def partition(
         )
     elif file_type == FileType.EMPTY:
         elements = []
+        msg = "Invalid file" if not filename else f"Invalid file {filename}"
+        print(msg, ": returning empty array")
     elif file_type == FileType.ZIP:
         filespaths = extract_zip(filename, tmp_dir_path)
         elements = []
@@ -468,8 +470,9 @@ def partition(
             )
             elements.extend(file_elements)
     else:
+        elements = []
         msg = "Invalid file" if not filename else f"Invalid file {filename}"
-        raise ValueError(f"{msg}. The {file_type} file type is not supported in partition.")
+        print(msg, ": returning empty array")
 
     for element in elements:
         element.metadata.url = url
